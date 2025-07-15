@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生產力追蹤系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', '微軟正黑體', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px 20px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            color: #666;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #007bff;
+            border-bottom: 3px solid #007bff;
+        }
+
+        .nav-tab:hover:not(.active) {
+            background: #e9ecef;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            min-height: 600px;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Daily Tracker Styles */
+        .daily-tracker {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .date-nav {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+
+        .date-nav:hover {
+            background: #0056b3;
+            transform: scale(1.05);
+        }
+
+        .current-date {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            min-width: 300px;
+            text-align: center;
+        }
+
+        .habits-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .habit-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+
+        .habit-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .habit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .habit-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .habit-checkbox {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #007bff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .habit-checkbox:hover {
+            transform: scale(1.1);
+        }
+
+        .habit-checkbox.checked {
+            background: #007bff;
+            color: white;
+        }
+
+        .habit-notes {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+            font-size: 0.9em;
+        }
+
+        .habit-notes:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        /* Weekly Review Styles */
+        .weekly-review {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .week-selector {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .week-range {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            min-width: 350px;
+            text-align: center;
+        }
+
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .progress-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .progress-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .habits-summary {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .habits-chart {
+            display: grid;
+            grid-template-columns: 150px repeat(7, 1fr);
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .chart-header {
+            font-weight: bold;
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 0.85em;
+        }
+
+        .chart-habit-name {
+            font-weight: bold;
+            text-align: left;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .chart-cell {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-weight: bold;
+            border: 2px solid #e0e0e0;
+            font-size: 0.8em;
+        }
+
+        .chart-cell.completed {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+
+        .reflection-section {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        .reflection-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .reflection-input {
+            width: 100%;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+            font-size: 1em;
+        }
+
+        .reflection-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .achievements-list {
+            margin-bottom: 15px;
+        }
+
+        .achievement-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .achievement-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .achievement-input:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        .add-achievement {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .add-achievement:hover {
+            background: #218838;
+            transform: scale(1.05);
+        }
+
+        .remove-achievement {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-save {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            background: #28a745;
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .nav-tabs {
+                flex-direction: column;
+            }
+            
+            .habits-chart {
+                grid-template-columns: 100px repeat(7, 1fr);
+                gap: 5px;
+                font-size: 0.8em;
+            }
+            
+            .chart-cell {
+                width: 25px;
+                height: 25px;
+                font-size: 0.7em;
+            }
+            
+            .date-selector, .week-selector {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .current-date, .week-range {
+                min-width: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 完整生產力追蹤系統</h1>
+            <p>番茄工作法 × 習慣追蹤 × 週間反思</p>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('pomodoro')">🍅 番茄工作法</button>
+            <button class="nav-tab" onclick="switchTab('daily')">📅 每日追蹤</button>
+            <button class="nav-tab" onclick="switchTab('weekly')">📊 週間反思</button>
+        </div>
+
+        <!-- Pomodoro Tab -->
+        <div id="pomodoro-tab" class="tab-content active">
+            <div style="text-align: center; margin-bottom: 40px; padding: 30px; background: #f8f9fa; border-radius: 15px;">
+                <div id="timer-display" style="font-size: 4em; font-weight: bold; font-family: 'Courier New', monospace; margin-bottom: 20px; color: #007bff;">25:00</div>
+                <div id="timer-status" style="font-size: 1.5em; margin-bottom: 20px;">⏰ 準備開始工作</div>
+                <div id="current-task" style="background: #e3f2fd; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #2196f3; display: none;">
+                    <strong>目前任務：</strong><span id="current-task-name"></span>
+                </div>
+                
+                <div style="display: flex; justify-content: center; gap: 15px;">
+                    <button id="start-btn" class="btn" style="background: #28a745; color: white;" disabled>▶️ 開始</button>
+                    <button id="pause-btn" class="btn" style="background: #ffc107; color: white;" disabled>⏸️ 暫停</button>
+                    <button id="reset-btn" class="btn" style="background: #dc3545; color: white;">🔄 重設</button>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+                <input type="text" id="task-input" placeholder="輸入新任務..." style="flex: 1; padding: 12px 15px; border: 2px solid #e0e0e0; border-radius: 25px; font-size: 1.1em;">
+                <button id="add-btn" class="btn" style="background: #007bff; color: white;">➕ 新增任務</button>
+            </div>
+
+            <div id="task-list">
+                <div style="text-align: center; padding: 60px 20px; color: #666; font-size: 1.2em;">
+                    還沒有任務，點擊上方「新增任務」來添加第一個任務！
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Tracker Tab -->
+        <div id="daily-tab" class="tab-content">
+            <div class="daily-tracker">
+                <div class="date-selector">
+                    <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
+                    <div class="current-date" id="current-date"></div>
+                    <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 15px; padding: 20px; margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px; color: #333;">➕ 新增習慣</h3>
+                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                        <select id="habit-icon" style="padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 1.1em;">
+                            <option value="🎯">🎯 目標</option>
+                            <option value="📚">📚 學習</option>
+                            <option value="🏃‍♂️">🏃‍♂️ 運動</option>
+                            <option value="🍎">🍎 健康</option>
+                            <option value="💼">💼 工作</option>
+                            <option value="❤️">❤️ 關係</option>
+                            <option value="🧘‍♀️">🧘‍♀️ 心靈</option>
+                            <option value="🎨">🎨 創意</option>
+                            <option value="💰">💰 理財</option>
+                            <option value="🏠">🏠 家務</option>
+                            <option value="🌱">🌱 成長</option>
+                            <option value="⭐">⭐ 其他</option>
+                        </select>
+                        <input type="text" id="habit-name" placeholder="輸入習慣名稱..." style="flex: 1; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 1.1em;">
+                        <button onclick="addCustomHabit()" style="background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">新增</button>
+                    </div>
+                </div>
+
+                <div class="habits-grid" id="habits-grid">
+                    <!-- Habits will be populated here -->
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="btn btn-save" onclick="saveDailyData()">💾 保存今日記錄</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Review Tab -->
+        <div id="weekly-tab" class="tab-content">
+            <div class="weekly-review">
+                <div class="week-selector">
+                    <button class="date-nav" onclick="changeWeek(-1)">◀️ 上週</button>
+                    <div class="week-range" id="week-range"></div>
+                    <button class="date-nav" onclick="changeWeek(1)">下週 ▶️</button>
+                </div>
+
+                <div class="progress-overview" id="progress-overview">
+                    <!-- Progress cards will be populated here -->
+                </div>
+
+                <div class="habits-summary">
+                    <h3 style="margin-bottom: 20px; color: #333;">📈 習慣完成情況</h3>
+                    <div id="habits-chart"></div>
+                </div>
+
+                <div class="reflection-section">
+                    <div class="reflection-title">🎉 本週最成功的三件事</div>
+                    <div class="achievements-list" id="achievements-list">
+                        <div class="achievement-item">
+                            <input type="text" class="achievement-input" placeholder="成功事項 1">
+                            <button class="add-achievement" onclick="addAchievement()">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="reflection-section">
+                    <div class="reflection-title">🤔 遇到的挑戰</div>
+                    <textarea class="reflection-input" id="challenges" placeholder="描述本週遇到的主要挑戰..."></textarea>
+                </div>
+
+                <div class="reflection-section">
+                    <div class="reflection-title">💡 學到的教訓</div>
+                    <textarea class="reflection-input" id="lessons" placeholder="分享你從挑戰中學到的重要教訓..."></textarea>
+                </div>
+
+                <div class="reflection-section">
+                    <div class="reflection-title">🎯 下週改善計劃</div>
+                    <textarea class="reflection-input" id="improvements" placeholder="下週想要改善的地方和具體行動計劃..."></textarea>
+                </div>
+
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-save" onclick="saveWeeklyReview()">💾 保存週間反思</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // App State
+        let currentDate = new Date();
+        let currentWeekStart = getWeekStart(new Date());
+        
+        // Pomodoro State
+        let sessions = [];
+        let currentSession = null;
+        let timer = 25 * 60;
+        let isActive = false;
+        let isBreak = false;
+        let interval = null;
+
+        // Default habits
+        const defaultHabits = [
+            { id: 1, name: '準時起床', icon: '🌅' },
+            { id: 2, name: '運動 30 分鐘', icon: '🏃‍♂️' },
+            { id: 3, name: '喝足夠的水', icon: '💧' },
+            { id: 4, name: '閱讀或學習', icon: '📚' },
+            { id: 5, name: '準時睡覺', icon: '😴' },
+            { id: 6, name: '冥想或放鬆', icon: '🧘‍♀️' }
+        ];
+
+        // Initialize app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('App initializing...');
+            initializePomodoro();
+            initializeDailyTracker();
+            initializeWeeklyReview();
+        });
+
+        // Utility functions
+        function getWeekStart(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            return new Date(d.setDate(diff));
+        }
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            console.log('Switching to tab:', tabName);
+            
+            // Update nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+            
+            if (tabName === 'daily') {
+                updateCurrentDate();
+                loadDailyData();
+            } else if (tabName === 'weekly') {
+                updateWeekRange();
+                loadWeeklyData();
+            }
+        }
+
+        // Pomodoro Functions
+        function initializePomodoro() {
+            console.log('Initializing Pomodoro...');
+            document.getElementById('start-btn').addEventListener('click', startTimer);
+            document.getElementById('pause-btn').addEventListener('click', pauseTimer);
+            document.getElementById('reset-btn').addEventListener('click', resetTimer);
+            document.getElementById('add-btn').addEventListener('click', addTask);
+            document.getElementById('task-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') addTask();
+            });
+            updatePomodoroDisplay();
+        }
+
+        function startTimer() {
+            if (!currentSession) return;
+            
+            isActive = true;
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('pause-btn').disabled = false;
+            
+            if (!currentSession.startTime) {
+                currentSession.startTime = new Date().toLocaleTimeString();
+                updateTaskDisplay();
+            }
+            
+            interval = setInterval(() => {
+                timer--;
+                updatePomodoroDisplay();
+                
+                if (timer === 0) {
+                    handleTimerComplete();
+                }
+            }, 1000);
+        }
+
+        function pauseTimer() {
+            isActive = false;
+            document.getElementById('start-btn').disabled = false;
+            document.getElementById('pause-btn').disabled = true;
+            clearInterval(interval);
+        }
+
+        function resetTimer() {
+            isActive = false;
+            isBreak = false;
+            timer = 25 * 60;
+            currentSession = null;
+            document.getElementById('start-btn').disabled = true;
+            document.getElementById('pause-btn').disabled = true;
+            document.getElementById('current-task').style.display = 'none';
+            clearInterval(interval);
+            updatePomodoroDisplay();
+        }
+
+        function handleTimerComplete() {
+            isActive = false;
+            clearInterval(interval);
+            
+            if (!isBreak) {
+                currentSession.endTime = new Date().toLocaleTimeString();
+                currentSession.completed = true;
+                updateTaskDisplay();
+                showNotification('🎉 工作時間完成！開始休息 5 分鐘');
+                isBreak = true;
+                timer = 5 * 60;
+                startTimer();
+            } else {
+                showNotification('⏰ 休息結束！準備開始下一個番茄鐘');
+                resetTimer();
+            }
+        }
+
+        function addTask() {
+            const taskText = document.getElementById('task-input').value.trim();
+            if (!taskText) return;
+            
+            const newTask = {
+                id: Date.now(),
+                task: taskText,
+                startTime: '',
+                endTime: '',
+                completed: false,
+                notes: '',
+                date: new Date().toLocaleDateString()
+            };
+            
+            sessions.push(newTask);
+            document.getElementById('task-input').value = '';
+            updateTaskDisplay();
+        }
+
+        function selectTask(session) {
+            if (isActive) return;
+            
+            currentSession = session;
+            document.getElementById('current-task').style.display = 'block';
+            document.getElementById('current-task-name').textContent = session.task;
+            document.getElementById('start-btn').disabled = false;
+            timer = 25 * 60;
+            isBreak = false;
+            
+            updatePomodoroDisplay();
+            updateTaskDisplay();
+        }
+
+        function deleteTask(id) {
+            sessions = sessions.filter(s => s.id !== id);
+            if (currentSession && currentSession.id === id) {
+                resetTimer();
+            }
+            updateTaskDisplay();
+        }
+
+        function updateTaskDisplay() {
+            const taskList = document.getElementById('task-list');
+            if (sessions.length === 0) {
+                taskList.innerHTML = '<div style="text-align: center; padding: 60px 20px; color: #666; font-size: 1.2em;">還沒有任務，點擊上方「新增任務」來添加第一個任務！</div>';
+                return;
+            }
+            
+            taskList.innerHTML = sessions.map(session => `
+                <div style="background: white; border: 2px solid ${currentSession?.id === session.id ? '#007bff' : '#e0e0e0'}; border-radius: 15px; padding: 20px; margin-bottom: 15px; cursor: pointer; transition: all 0.3s ease; ${session.completed ? 'opacity: 0.7;' : ''}" 
+                     onclick="selectTask(${JSON.stringify(session).replace(/"/g, '&quot;')})">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9em; font-weight: bold; ${session.completed ? 'background: #28a745; color: white;' : 'background: #e0e0e0; color: #666;'}">
+                                ${session.completed ? '✓' : '○'}
+                            </div>
+                            <div style="font-size: 1.2em; font-weight: 500; ${session.completed ? 'text-decoration: line-through; color: #666;' : 'color: #333;'}">${session.task}</div>
+                        </div>
+                        <button onclick="event.stopPropagation(); deleteTask(${session.id})" style="background: #dc3545; color: white; border: none; border-radius: 20px; padding: 8px 12px; cursor: pointer;">🗑️</button>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px; font-size: 0.9em; color: #666;">
+                        <div>開始: ${session.startTime || '--:--'}</div>
+                        <div>結束: ${session.endTime || '--:--'}</div>
+                    </div>
+                    <textarea placeholder="備註..." style="width: 100%; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; resize: vertical; min-height: 60px;" onclick="event.stopPropagation()">${session.notes}</textarea>
+                </div>
+            `).join('');
+        }
+
+        function updatePomodoroDisplay() {
+            const display = document.getElementById('timer-display');
+            const status = document.getElementById('timer-status');
+            
+            display.textContent = formatTime(timer);
+            
+            if (isBreak) {
+                display.style.color = '#28a745';
+                status.textContent = '☕ 休息時間';
+            } else if (timer <= 5 * 60) {
+                display.style.color = '#dc3545';
+                status.textContent = isActive ? '🔥 專注工作中' : '⏰ 準備開始工作';
+            } else if (timer <= 10 * 60) {
+                display.style.color = '#ffc107';
+                status.textContent = isActive ? '🔥 專注工作中' : '⏰ 準備開始工作';
+            } else {
+                display.style.color = '#007bff';
+                status.textContent = isActive ? '🔥 專注工作中' : (currentSession ? '⏰ 準備開始工作' : '⏰ 請選擇一個任務');
+            }
+        }
+
+        // Get all habits (default + custom)
+        function getAllHabits() {
+            const customHabits = JSON.parse(localStorage.getItem('customHabits') || '[]');
+            return [...defaultHabits, ...customHabits];
+        }
+
+        // Add custom habit
+        function addCustomHabit() {
+            const iconSelect = document.getElementById('habit-icon');
+            const nameInput = document.getElementById('habit-name');
+            
+            const icon = iconSelect.value;
+            const name = nameInput.value.trim();
+            
+            if (!name) {
+                showNotification('❌ 請輸入習慣名稱');
+                return;
+            }
+            
+            const customHabits = JSON.parse(localStorage.getItem('customHabits') || '[]');
+            const newHabit = {
+                id: Date.now(), // Use timestamp as unique ID
+                name: name,
+                icon: icon,
+                isCustom: true
+            };
+            
+            customHabits.push(newHabit);
+            localStorage.setItem('customHabits', JSON.stringify(customHabits));
+            
+            // Clear inputs
+            nameInput.value = '';
+            iconSelect.selectedIndex = 0;
+            
+            // Reload habits display
+            loadDailyData();
+            showNotification(`✅ 習慣「${icon} ${name}」已新增！`);
+        }
+
+        // Delete custom habit
+        function deleteCustomHabit(habitId) {
+            if (confirm('確定要刪除這個習慣嗎？這將會刪除所有相關的歷史記錄。')) {
+                const customHabits = JSON.parse(localStorage.getItem('customHabits') || '[]');
+                const updatedHabits = customHabits.filter(habit => habit.id !== habitId);
+                localStorage.setItem('customHabits', JSON.stringify(updatedHabits));
+                
+                // Also remove all related habit data from all dates
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('habits_')) {
+                        const habitData = JSON.parse(localStorage.getItem(key) || '{}');
+                        delete habitData[habitId];
+                        localStorage.setItem(key, JSON.stringify(habitData));
+                    }
+                });
+                
+                loadDailyData();
+                showNotification('🗑️ 習慣已刪除');
+            }
+        }
+        function initializeDailyTracker() {
+            console.log('Initializing Daily Tracker...');
+            updateCurrentDate();
+            loadDailyData();
+        }
+
+        function changeDate(days) {
+            currentDate.setDate(currentDate.getDate() + days);
+            updateCurrentDate();
+            loadDailyData();
+        }
+
+        function updateCurrentDate() {
+            const dateElement = document.getElementById('current-date');
+            if (dateElement) {
+                dateElement.textContent = currentDate.toLocaleDateString('zh-TW', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+            }
+        }
+
+        function loadDailyData() {
+            console.log('Loading daily data for:', currentDate.toDateString());
+            const dateKey = currentDate.toDateString();
+            const habitData = JSON.parse(localStorage.getItem(`habits_${dateKey}`) || '{}');
+            const allHabits = getAllHabits();
+            
+            const habitsGrid = document.getElementById('habits-grid');
+            if (habitsGrid) {
+                habitsGrid.innerHTML = allHabits.map(habit => `
+                    <div class="habit-card">
+                        <div class="habit-header">
+                            <div class="habit-name">${habit.icon} ${habit.name}</div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="habit-checkbox ${habitData[habit.id]?.completed ? 'checked' : ''}" 
+                                     onclick="toggleHabit(${habit.id})">
+                                    ${habitData[habit.id]?.completed ? '✓' : ''}
+                                </div>
+                                ${habit.isCustom ? `<button onclick="deleteCustomHabit(${habit.id})" style="background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8em;" title="刪除習慣">🗑️</button>` : ''}
+                            </div>
+                        </div>
+                        <textarea class="habit-notes" placeholder="今日心得或備註..." 
+                                  onchange="updateHabitNotes(${habit.id}, this.value)">${habitData[habit.id]?.notes || ''}</textarea>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function toggleHabit(habitId) {
+            console.log('Toggling habit:', habitId);
+            const dateKey = currentDate.toDateString();
+            const habitData = JSON.parse(localStorage.getItem(`habits_${dateKey}`) || '{}');
+            
+            if (!habitData[habitId]) habitData[habitId] = {};
+            habitData[habitId].completed = !habitData[habitId].completed;
+            
+            localStorage.setItem(`habits_${dateKey}`, JSON.stringify(habitData));
+            loadDailyData();
+            
+            if (habitData[habitId].completed) {
+                const allHabits = getAllHabits();
+                const habit = allHabits.find(h => h.id === habitId);
+                showNotification(`🎉 完成習慣：${habit.name}`);
+            }
+        }
+
+        function updateHabitNotes(habitId, notes) {
+            const dateKey = currentDate.toDateString();
+            const habitData = JSON.parse(localStorage.getItem(`habits_${dateKey}`) || '{}');
+            
+            if (!habitData[habitId]) habitData[habitId] = {};
+            habitData[habitId].notes = notes;
+            
+            localStorage.setItem(`habits_${dateKey}`, JSON.stringify(habitData));
+        }
+
+        function saveDailyData() {
+            showNotification('💾 今日記錄已保存！');
+        }
+
+        // Weekly Review Functions
+        function initializeWeeklyReview() {
+            console.log('Initializing Weekly Review...');
+            updateWeekRange();
+            loadWeeklyData();
+        }
+
+        function changeWeek(weeks) {
+            currentWeekStart.setDate(currentWeekStart.getDate() + (weeks * 7));
+            updateWeekRange();
+            loadWeeklyData();
+        }
+
+        function updateWeekRange() {
+            const weekEnd = new Date(currentWeekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            
+            const weekRangeElement = document.getElementById('week-range');
+            if (weekRangeElement) {
+                weekRangeElement.textContent = 
+                    `${currentWeekStart.toLocaleDateString('zh-TW')} - ${weekEnd.toLocaleDateString('zh-TW')}`;
+            }
+        }
+
+        function loadWeeklyData() {
+            console.log('Loading weekly data...');
+            loadProgressOverview();
+            loadHabitsChart();
+            loadWeeklyReflection();
+        }
+
+        function loadProgressOverview() {
+            const weekDates = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + i);
+                weekDates.push(date);
+            }
+            
+            const allHabits = getAllHabits();
+            let totalHabits = 0;
+            let completedHabits = 0;
+            let activeDays = 0;
+            
+            weekDates.forEach(date => {
+                const dateKey = date.toDateString();
+                const habitData = JSON.parse(localStorage.getItem(`habits_${dateKey}`) || '{}');
+                
+                let dayCompleted = 0;
+                let dayTotal = 0;
+                
+                allHabits.forEach(habit => {
+                    dayTotal++;
+                    if (habitData[habit.id]?.completed) {
+                        dayCompleted++;
+                        completedHabits++;
+                    }
+                    totalHabits++;
+                });
+                
+                if (dayCompleted > 0) activeDays++;
+            });
+            
+            const completionRate = totalHabits > 0 ? Math.round((completedHabits / totalHabits) * 100) : 0;
+            
+            const progressOverview = document.getElementById('progress-overview');
+            if (progressOverview) {
+                progressOverview.innerHTML = `
+                    <div class="progress-card">
+                        <div class="progress-number">${completedHabits}</div>
+                        <div class="progress-label">已完成習慣</div>
+                    </div>
+                    <div class="progress-card">
+                        <div class="progress-number">${activeDays}</div>
+                        <div class="progress-label">活躍天數</div>
+                    </div>
+                    <div class="progress-card">
+                        <div class="progress-number">${completionRate}%</div>
+                        <div class="progress-label">完成率</div>
+                    </div>
+                `;
+            }
+        }
+
+        function loadHabitsChart() {
+            const weekDates = [];
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + i);
+                weekDates.push(date);
+            }
+            
+            const allHabits = getAllHabits();
+            const habitsChart = document.getElementById('habits-chart');
+            if (habitsChart) {
+                let chartHTML = `
+                    <div class="chart-header">習慣</div>
+                    ${weekDates.map(date => `<div class="chart-header">${date.toLocaleDateString('zh-TW', { weekday: 'short' })}</div>`).join('')}
+                `;
+                
+                allHabits.forEach(habit => {
+                    chartHTML += `<div class="chart-habit-name">${habit.icon} ${habit.name}</div>`;
+                    
+                    weekDates.forEach(date => {
+                        const dateKey = date.toDateString();
+                        const habitData = JSON.parse(localStorage.getItem(`habits_${dateKey}`) || '{}');
+                        const completed = habitData[habit.id]?.completed;
+                        
+                        chartHTML += `<div class="chart-cell ${completed ? 'completed' : ''}">${completed ? '✓' : ''}</div>`;
+                    });
+                });
+                
+                habitsChart.innerHTML = chartHTML;
+            }
+        }
+
+        function loadWeeklyReflection() {
+            const weekKey = currentWeekStart.toDateString();
+            const reflectionData = JSON.parse(localStorage.getItem(`reflection_${weekKey}`) || '{}');
+            
+            // Load achievements
+            const achievementsList = document.getElementById('achievements-list');
+            if (achievementsList && reflectionData.achievements) {
+                achievementsList.innerHTML = reflectionData.achievements.map((achievement, index) => `
+                    <div class="achievement-item">
+                        <input type="text" class="achievement-input" value="${achievement}" onchange="updateAchievement(${index}, this.value)">
+                        <button class="remove-achievement" onclick="removeAchievement(${index})">刪除</button>
+                    </div>
+                `).join('') + `
+                    <div class="achievement-item">
+                        <input type="text" class="achievement-input" placeholder="新增成功事項...">
+                        <button class="add-achievement" onclick="addAchievement()">+</button>
+                    </div>
+                `;
+            }
+            
+            // Load other reflections
+            const challengesElement = document.getElementById('challenges');
+            const lessonsElement = document.getElementById('lessons');
+            const improvementsElement = document.getElementById('improvements');
+            
+            if (challengesElement) challengesElement.value = reflectionData.challenges || '';
+            if (lessonsElement) lessonsElement.value = reflectionData.lessons || '';
+            if (improvementsElement) improvementsElement.value = reflectionData.improvements || '';
+        }
+
+        function addAchievement() {
+            const weekKey = currentWeekStart.toDateString();
+            const reflectionData = JSON.parse(localStorage.getItem(`reflection_${weekKey}`) || '{}');
+            
+            if (!reflectionData.achievements) reflectionData.achievements = [];
+            
+            const achievementsList = document.getElementById('achievements-list');
+            const newInput = achievementsList.querySelector('.achievement-item:last-child .achievement-input');
+            const newAchievement = newInput.value.trim();
+            
+            if (newAchievement) {
+                reflectionData.achievements.push(newAchievement);
+                localStorage.setItem(`reflection_${weekKey}`, JSON.stringify(reflectionData));
+                loadWeeklyReflection();
+                showNotification('✅ 成功事項已添加！');
+            }
+        }
+
+        function updateAchievement(index, value) {
+            const weekKey = currentWeekStart.toDateString();
+            const reflectionData = JSON.parse(localStorage.getItem(`reflection_${weekKey}`) || '{}');
+            
+            if (!reflectionData.achievements) reflectionData.achievements = [];
+            reflectionData.achievements[index] = value;
+            
+            localStorage.setItem(`reflection_${weekKey}`, JSON.stringify(reflectionData));
+        }
+
+        function removeAchievement(index) {
+            const weekKey = currentWeekStart.toDateString();
+            const reflectionData = JSON.parse(localStorage.getItem(`reflection_${weekKey}`) || '{}');
+            
+            if (reflectionData.achievements) {
+                reflectionData.achievements.splice(index, 1);
+                localStorage.setItem(`reflection_${weekKey}`, JSON.stringify(reflectionData));
+                loadWeeklyReflection();
+                showNotification('🗑️ 成功事項已刪除');
+            }
+        }
+
+        function saveWeeklyReview() {
+            const weekKey = currentWeekStart.toDateString();
+            const reflectionData = JSON.parse(localStorage.getItem(`reflection_${weekKey}`) || '{}');
+            
+            const challengesElement = document.getElementById('challenges');
+            const lessonsElement = document.getElementById('lessons');
+            const improvementsElement = document.getElementById('improvements');
+            
+            reflectionData.challenges = challengesElement ? challengesElement.value : '';
+            reflectionData.lessons = lessonsElement ? lessonsElement.value : '';
+            reflectionData.improvements = improvementsElement ? improvementsElement.value : '';
+            reflectionData.savedAt = new Date().toISOString();
+            
+            localStorage.setItem(`reflection_${weekKey}`, JSON.stringify(reflectionData));
+            showNotification('💾 週間反思已保存！');
+        }
+    </script>
+</body>
+</html>
