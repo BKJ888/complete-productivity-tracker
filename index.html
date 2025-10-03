@@ -4,19 +4,261 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>生產力追蹤系統</title>
-  <!-- 外部 CSS -->
-  <link rel="stylesheet" href="css/style.css">
-  <!-- Chart.js CDN -->
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* --- 1. Design System & Variables --- */
+    :root {
+      --font-family: 'Inter', sans-serif;
+      --primary-color: #4a90e2;
+      --primary-hover: #357abd;
+      --success-color: #50e3c2;
+      --warning-color: #f5a623;
+      --danger-color: #d0021b;
+      --text-color: #333;
+      --text-light: #888;
+      --bg-color: #f4f7f9;
+      --card-bg: #ffffff;
+      --border-color: #e0e0e0;
+      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --border-radius: 12px;
+    }
+
+    body.dark-mode {
+      --text-color: #f0f0f0;
+      --text-light: #aaa;
+      --bg-color: #1a1a1a;
+      --card-bg: #2c2c2c;
+      --border-color: #444;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* --- 2. General Styles & Reset --- */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    /* --- 3. Header & Navigation --- */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+    .header p {
+      font-size: 1.1em;
+      color: var(--text-light);
+    }
+
+    .nav-tabs {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 30px;
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 8px;
+      box-shadow: var(--shadow);
+    }
+    .nav-tab {
+      flex: 1;
+      padding: 12px 15px;
+      border: none;
+      background: none;
+      color: var(--text-light);
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s, color 0.3s;
+      text-align: center;
+    }
+    .nav-tab:hover {
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+    .nav-tab.active {
+      background-color: var(--primary-color);
+      color: white;
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+    
+    /* Card Style for content */
+    .card {
+        background-color: var(--card-bg);
+        padding: 30px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 20px;
+    }
+
+    /* --- 4. Pomodoro Timer Styles --- */
+    #timer-display {
+      font-size: 5em;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: var(--primary-color);
+    }
+    #timer-status {
+      font-size: 1.2em;
+      color: var(--text-light);
+    }
+    .timer-controls {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 20px;
+    }
+    #current-task {
+      background: rgba(74, 144, 226, 0.1);
+      padding: 15px;
+      border-radius: 10px;
+      margin: 20px auto;
+      border-left: 4px solid var(--primary-color);
+      display: none; /* Controlled by JS */
+      max-width: 80%;
+    }
+    .task-input-group {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+    }
+
+    /* --- 5. General Component Styles (Buttons, Inputs) --- */
+    .btn {
+      padding: 12px 25px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.1);
+    }
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    #start-btn { background-color: var(--success-color); color: #fff; }
+    #pause-btn { background-color: var(--warning-color); color: #fff; }
+    #reset-btn { background-color: var(--danger-color); color: #fff; }
+    #add-btn { background-color: var(--primary-color); color: #fff; }
+
+    input[type="text"], input[type="number"], select {
+      flex: 1;
+      padding: 12px 15px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1.1em;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    }
+
+    /* --- 6. Daily Tracker Styles --- */
+    .daily-tracker .date-selector {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    #current-date {
+      font-size: 1.5em;
+      font-weight: 500;
+      margin: 0 20px;
+    }
+    .date-nav {
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: var(--primary-color);
+    }
+    .habits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 20px;
+    }
+    .habit-item {
+      background-color: var(--card-bg);
+      border-radius: var(--border-radius);
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .habit-item:hover {
+      transform: translateY(-5px);
+    }
+    .habit-icon { font-size: 2.5em; }
+    .habit-name { font-weight: 500; margin: 10px 0; }
+    .habit-progress { color: var(--text-light); }
+
+    /* --- 7. Dark Mode Toggle --- */
+    .dark-mode-toggle {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+    }
+    .dark-mode-toggle button {
+        padding: 10px 15px;
+        border: none;
+        border-radius: 50%;
+        background: var(--card-bg);
+        color: var(--text-color);
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        font-size: 1.5em;
+    }
+
+  </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🎯 完整生產力追蹤系統</h1>
+      <h1>🎯 生產力追蹤系統</h1>
       <p>番茄工作法 × 習慣追蹤 × 週間反思 × 月度報告 × 目標管理</p>
     </div>
 
-    <!-- 導覽 Tabs -->
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('pomodoro')">🍅 番茄工作法</button>
       <button class="nav-tab" onclick="switchTab('daily')">📅 每日追蹤</button>
@@ -25,121 +267,113 @@
       <button class="nav-tab" onclick="switchTab('goals')">🎯 目標管理</button>
     </div>
 
-    <!-- Pomodoro Tab -->
     <div id="pomodoro-tab" class="tab-content active">
-      <div class="pomodoro-card">
-        <div id="timer-display" class="timer-display">25:00</div>
-        <div id="timer-status" class="timer-status">⏰ 準備開始工作</div>
+        <div class="card" style="text-align:center;">
+            <div id="timer-display">25:00</div>
+            <div id="timer-status">⏰ 準備開始工作</div>
 
-        <!-- 自訂時間設定 -->
-        <div class="time-settings">
-          <div class="time-input">
-            <label>工作</label>
-            <input type="number" id="work-time" value="25" min="1"> 分鐘
-          </div>
-          <div class="time-input">
-            <label>休息</label>
-            <input type="number" id="break-time" value="5" min="1"> 分鐘
-          </div>
-          <button class="btn-primary" onclick="setCustomTime()">套用</button>
+            <div style="margin:20px 0; display:flex; justify-content:center; align-items:center; gap:15px;">
+                <label>工作:</label>
+                <input type="number" id="work-time" value="25" style="width:70px;">
+                <label>休息:</label>
+                <input type="number" id="break-time" value="5" style="width:70px;">
+                <button onclick="setCustomTime()" class="btn" style="background:var(--primary-color); color:white;">設定</button>
+            </div>
+
+            <div id="current-task">
+                <strong>目前任務：</strong><span id="current-task-name"></span>
+            </div>
+
+            <div class="timer-controls">
+                <button id="start-btn" class="btn" disabled>▶️ 開始</button>
+                <button id="pause-btn" class="btn" disabled>⏸️ 暫停</button>
+                <button id="reset-btn" class="btn">🔄 重設</button>
+            </div>
         </div>
-
-        <div id="current-task" class="current-task" style="display:none;">
-          <strong>目前任務：</strong><span id="current-task-name"></span>
+        <div class="card">
+            <div class="task-input-group">
+                <input type="text" id="task-input" placeholder="輸入要專注的新任務...">
+                <button id="add-btn" class="btn">➕ 新增</button>
+            </div>
+            <div id="task-list">
+                </div>
         </div>
-
-        <div class="btn-group">
-          <button id="start-btn" class="btn-success" disabled>▶️ 開始</button>
-          <button id="pause-btn" class="btn-warning" disabled>⏸️ 暫停</button>
-          <button id="reset-btn" class="btn-danger">🔄 重設</button>
-        </div>
-      </div>
-
-      <!-- 任務輸入 -->
-      <div class="task-input-box">
-        <input type="text" id="task-input" placeholder="輸入新任務...">
-        <button id="add-btn" class="btn-primary">➕ 新增任務</button>
-      </div>
-
-      <!-- 任務清單 -->
-      <div id="task-list" class="task-list"></div>
     </div>
 
-    <!-- Daily Tracker Tab -->
     <div id="daily-tab" class="tab-content">
-      <div class="daily-tracker">
-        <div class="date-selector">
-          <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
-          <div class="current-date" id="current-date"></div>
-          <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
+        <div class="daily-tracker card">
+            <div class="date-selector">
+                <button class="date-nav" onclick="changeDate(-1)">◀️</button>
+                <div class="current-date" id="current-date"></div>
+                <button class="date-nav" onclick="changeDate(1)">▶️</button>
+            </div>
+            <div id="habits-grid" class="habits-grid">
+                </div>
         </div>
-
-        <!-- 習慣清單 -->
-        <div id="habits-grid" class="habits-grid"></div>
-
-        <!-- 新增習慣區塊 -->
-        <div class="add-habit-box">
-          <h3>➕ 新增習慣</h3>
-          <div class="add-habit-form">
-            <select id="habit-icon">
-              <option value="💧">💧 喝水</option>
-              <option value="🏃‍♂️">🏃‍♂️ 運動</option>
-              <option value="📚">📚 閱讀</option>
-              <option value="🛏️">🛏️ 早睡</option>
-              <option value="🍎">🍎 健康飲食</option>
-            </select>
-            <input type="text" id="habit-name" placeholder="輸入習慣名稱...">
-            <input type="number" id="habit-target" placeholder="目標次數" min="1" value="1">
-            <button onclick="addCustomHabit()">新增</button>
-          </div>
+        <div class="card">
+            <h3>➕ 新增自訂習慣</h3>
+            <div class="add-habit-form" style="display:flex; gap:10px; margin-top:15px;">
+                <select id="habit-icon">
+                    <option value="💧">💧 喝水</option>
+                    <option value="🏃‍♂️">🏃‍♂️ 運動</option>
+                    <option value="📚">📚 閱讀</option>
+                    <option value="🛏️">🛏️ 早睡</option>
+                    <option value="🍎">🍎 健康飲食</option>
+                </select>
+                <input type="text" id="habit-name" placeholder="輸入習慣名稱...">
+                <input type="number" id="habit-target" placeholder="目標次數" min="1" value="1" style="flex:0.5;">
+                <button onclick="addCustomHabit()" class="btn" style="background:var(--primary-color); color:white;">新增</button>
+            </div>
         </div>
-
-        <div style="text-align:center;margin-top:20px;">
-          <button class="btn btn-save" onclick="saveDailyData()">💾 保存今日記錄</button>
-        </div>
-      </div>
     </div>
 
-    <!-- Weekly Review Tab -->
     <div id="weekly-tab" class="tab-content">
-      <div id="progress-overview" class="weekly-card"></div>
-      <div class="reflection-section">
-        <div class="reflection-title">🎉 本週最成功的三件事</div>
-        <div id="achievements-list"></div>
-      </div>
-    </div>
-
-    <!-- 月度報告 Tab -->
-    <div id="monthly-tab" class="tab-content">
-      <div class="monthly-card">
-        <h2>📈 月度報告</h2>
-        <canvas id="monthlyChart" style="max-height:400px;"></canvas>
-      </div>
-    </div>
-
-    <!-- 目標管理 Tab -->
-    <div id="goals-tab" class="tab-content">
-      <div class="goals-card">
-        <h2>🎯 長期目標管理</h2>
-        <div class="goal-inputs">
-          <input type="text" id="goal-input" placeholder="輸入長期目標...">
-          <input type="number" id="goal-target" placeholder="目標次數">
-          <button onclick="addGoal()" class="btn-success">新增</button>
+        <div class="card">
+            <h2>📊 本週進度總覽</h2>
+            <div id="progress-overview" style="margin-top:15px;"></div>
+            <div id="habits-chart"></div>
         </div>
-        <div id="goal-list"></div>
-      </div>
+        <div class="card">
+            <h2>🎉 本週最成功的三件事</h2>
+            <div id="achievements-list"></div>
+        </div>
+    </div>
+
+    <div id="monthly-tab" class="tab-content">
+        <div class="card">
+            <h2>📈 月度報告</h2>
+            <canvas id="monthlyChart" style="max-height:400px;"></canvas>
+            <div id="heatmap" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <div id="goals-tab" class="tab-content">
+        <div class="card">
+            <h2>🎯 長期目標管理</h2>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <input type="text" id="goal-input" placeholder="輸入長期目標...">
+                <input type="number" id="goal-target" placeholder="目標次數" style="flex:0.5;">
+                <button onclick="addGoal()" class="btn" style="background:var(--success-color);color:#fff;">新增</button>
+            </div>
+            <div id="goal-list"></div>
+        </div>
     </div>
   </div>
 
-  <!-- 深色模式切換按鈕 -->
-  <div style="position:fixed;bottom:20px;right:20px;">
-    <button onclick="toggleDarkMode()" class="darkmode-btn">🌙</button>
+  <div class="dark-mode-toggle">
+    <button onclick="toggleDarkMode()">🌙</button>
   </div>
 
-  <!-- 通知 -->
   <div id="notification" class="notification"></div>
 
-  <!-- 外部 JS -->
+  <script>
+    // Simple dark mode toggle function to add to your app.js or keep here
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+    }
+
+    // You can keep the rest of your JS in app.js
+  </script>
   <script src="js/app.js"></script>
 </body>
 </html>
