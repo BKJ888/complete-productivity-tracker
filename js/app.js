@@ -30,9 +30,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // 如果有自訂時間，帶入
   const customWork = parseInt(localStorage.getItem("customWork")) || 25;
   const customBreak = parseInt(localStorage.getItem("customBreak")) || 5;
-  document.getElementById("work-time").value = customWork;
-  document.getElementById("break-time").value = customBreak;
+  const workInput = document.getElementById("work-time");
+  const breakInput = document.getElementById("break-time");
+  if (workInput) workInput.value = customWork;
+  if (breakInput) breakInput.value = customBreak;
   timer = customWork * 60;
+  updatePomodoroDisplay();
 });
 
 // === 工具函式 ===
@@ -118,7 +121,10 @@ function setCustomTime(){
 }
 
 function startTimer() {
-  if (!currentSession) return;
+  if (!currentSession) {
+    alert("⚠️ 請先新增並選擇一個任務！");
+    return;
+  }
   isActive = true;
   document.getElementById("start-btn").disabled = true;
   document.getElementById("pause-btn").disabled = false;
@@ -126,7 +132,7 @@ function startTimer() {
   interval = setInterval(() => {
     timer--;
     updatePomodoroDisplay();
-    if (timer === 0) handleTimerComplete();
+    if (timer <= 0) handleTimerComplete();
   }, 1000);
 }
 function pauseTimer() {
@@ -164,6 +170,18 @@ function handleTimerComplete() {
     resetTimer();
   }
 }
+function updatePomodoroDisplay() {
+  const display = document.getElementById("timer-display");
+  const status = document.getElementById("timer-status");
+  display.textContent = formatTime(timer);
+  if (isBreak) {
+    display.style.color = "#28a745";
+    status.textContent = "☕ 休息中";
+  } else {
+    display.style.color = "#007bff";
+    status.textContent = isActive ? "🔥 工作中" : (currentSession ? "⏰ 準備開始" : "請新增任務");
+  }
+}
 
 // === 任務：標籤 + 優先級 ===
 const priorityLevels = ["最低","低","中","高","最高"];
@@ -194,19 +212,30 @@ function updateTaskDisplay() {
     return;
   }
   taskList.innerHTML = sessions.map(s => `
-    <div style="border:2px solid ${currentSession?.id===s.id?'#007bff':'#e0e0e0'};border-radius:15px;padding:15px;margin-bottom:10px;">
+    <div style="border:2px solid ${currentSession?.id===s.id?'#007bff':'#e0e0e0'};border-radius:15px;padding:15px;margin-bottom:10px;cursor:pointer;"
+         onclick="selectTask(${s.id})">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
           <strong>${s.task}</strong> <span style="color:#888;">[${s.tag||'無標籤'}]</span>
           <span style="color:${s.priority>=4?'red':'#666'};">優先級:${priorityLevels[s.priority-1]}</span>
         </div>
-        <button onclick="deleteTask(${s.id})" style="background:#dc3545;color:#fff;border:none;padding:5px 10px;border-radius:5px;">🗑️</button>
+        <button onclick="event.stopPropagation(); deleteTask(${s.id})" style="background:#dc3545;color:#fff;border:none;padding:5px 10px;border-radius:5px;">🗑️</button>
       </div>
     </div>
   `).join('');
 }
+function selectTask(id) {
+  if (isActive) return;
+  currentSession = sessions.find(s => s.id === id);
+  document.getElementById("current-task").style.display = "block";
+  document.getElementById("current-task-name").textContent = currentSession.task;
+  document.getElementById("start-btn").disabled = false;
+  timer = (parseInt(localStorage.getItem("customWork")) || 25) * 60;
+  updatePomodoroDisplay();
+}
 function deleteTask(id) {
   sessions = sessions.filter(s => s.id !== id);
+  if (currentSession && currentSession.id === id) resetTimer();
   updateTaskDisplay();
 }
 
