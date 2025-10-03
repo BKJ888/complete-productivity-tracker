@@ -13,7 +13,7 @@
   <div class="container">
     <div class="header">
       <h1>🎯 完整生產力追蹤系統</h1>
-      <p>番茄工作法 × 習慣追蹤 × 週間反思 × 目標管理</p>
+      <p>番茄工作法 × 習慣追蹤 × 週間反思 × 月度報告 × 目標管理</p>
     </div>
 
     <!-- 導覽 Tabs -->
@@ -30,6 +30,16 @@
       <div style="text-align:center; margin-bottom:40px; padding:30px; background:#f8f9fa; border-radius:15px;">
         <div id="timer-display" style="font-size:4em; font-weight:bold; font-family:'Courier New', monospace; margin-bottom:20px; color:#007bff;">25:00</div>
         <div id="timer-status" style="font-size:1.5em; margin-bottom:20px;">⏰ 準備開始工作</div>
+
+        <!-- 自訂時間設定 -->
+        <div style="margin:20px 0;">
+          <label>工作時間(分鐘): </label>
+          <input type="number" id="work-time" value="25" style="width:60px;">
+          <label>休息時間(分鐘): </label>
+          <input type="number" id="break-time" value="5" style="width:60px;">
+          <button onclick="setCustomTime()">設定</button>
+        </div>
+
         <div id="current-task" style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border-left:4px solid #2196f3; display:none;">
           <strong>目前任務：</strong><span id="current-task-name"></span>
         </div>
@@ -48,11 +58,10 @@
 
     <!-- Daily Tracker Tab -->
     <div id="daily-tab" class="tab-content">
-      <!-- 保留你原本的每日追蹤程式區塊 -->
       <div class="daily-tracker">
         <div class="date-selector">
           <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
-          <div class="current-date" id="current-date"></div>
+          <input type="date" id="date-picker" onchange="jumpToDate(this.value)">
           <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
         </div>
         <div id="habits-grid"></div>
@@ -64,7 +73,6 @@
 
     <!-- Weekly Review Tab -->
     <div id="weekly-tab" class="tab-content">
-      <!-- 保留你原本的週間反思程式區塊 -->
       <div id="progress-overview"></div>
       <div id="habits-chart"></div>
       <div class="reflection-section">
