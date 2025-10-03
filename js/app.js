@@ -26,6 +26,13 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeDailyTracker();
   initializeWeeklyReview();
   loadGoals();
+
+  // 如果有自訂時間，帶入
+  const customWork = parseInt(localStorage.getItem("customWork")) || 25;
+  const customBreak = parseInt(localStorage.getItem("customBreak")) || 5;
+  document.getElementById("work-time").value = customWork;
+  document.getElementById("break-time").value = customBreak;
+  timer = customWork * 60;
 });
 
 // === 工具函式 ===
@@ -99,6 +106,17 @@ function initializePomodoro() {
   updatePomodoroDisplay();
 }
 
+function setCustomTime(){
+  const work = parseInt(document.getElementById("work-time").value) || 25;
+  const rest = parseInt(document.getElementById("break-time").value) || 5;
+  localStorage.setItem("customWork", work);
+  localStorage.setItem("customBreak", rest);
+  timer = work * 60;
+  isBreak = false;
+  resetTimer();
+  showNotification(`✅ 已設定工作 ${work} 分鐘 / 休息 ${rest} 分鐘`);
+}
+
 function startTimer() {
   if (!currentSession) return;
   isActive = true;
@@ -120,7 +138,8 @@ function pauseTimer() {
 function resetTimer() {
   isActive = false;
   isBreak = false;
-  timer = 25 * 60;
+  const customWork = parseInt(localStorage.getItem("customWork")) || 25;
+  timer = customWork * 60;
   currentSession = null;
   document.getElementById("start-btn").disabled = true;
   document.getElementById("pause-btn").disabled = true;
@@ -135,9 +154,10 @@ function handleTimerComplete() {
     currentSession.endTime = new Date().toLocaleTimeString();
     currentSession.completed = true;
     updateTaskDisplay();
-    showNotification("🎉 工作時間完成！開始休息 5 分鐘");
+    showNotification("🎉 工作時間完成！開始休息");
     isBreak = true;
-    timer = 5 * 60;
+    const rest = parseInt(localStorage.getItem("customBreak") || "5");
+    timer = rest * 60;
     startTimer();
   } else {
     showNotification("⏰ 休息結束！準備開始下一個番茄鐘");
@@ -185,13 +205,31 @@ function updateTaskDisplay() {
     </div>
   `).join('');
 }
+function deleteTask(id) {
+  sessions = sessions.filter(s => s.id !== id);
+  updateTaskDisplay();
+}
 
 // === 每日追蹤 ===
 function initializeDailyTracker(){ updateCurrentDate(); loadDailyData(); }
 function updateCurrentDate(){
-  document.getElementById("current-date").textContent = currentDate.toLocaleDateString("zh-TW",{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  const dateElement = document.getElementById("current-date");
+  if(dateElement){
+    dateElement.textContent = currentDate.toLocaleDateString("zh-TW", {
+      year:'numeric', month:'long', day:'numeric', weekday:'long'
+    });
+  }
+  const picker = document.getElementById("date-picker");
+  if(picker){
+    picker.value = currentDate.toISOString().split("T")[0];
+  }
 }
 function changeDate(days){ currentDate.setDate(currentDate.getDate()+days); updateCurrentDate(); loadDailyData(); }
+function jumpToDate(val){
+  currentDate = new Date(val);
+  updateCurrentDate();
+  loadDailyData();
+}
 function getAllHabits(){ return [...defaultHabits, ...(JSON.parse(localStorage.getItem("customHabits")||"[]"))]; }
 function loadDailyData(){
   const dateKey=currentDate.toDateString();
@@ -294,4 +332,3 @@ function updateGoal(id){
 
 // === 深色模式 ===
 function toggleDarkMode(){ document.body.classList.toggle("dark-mode"); }
-
