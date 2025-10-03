@@ -56,20 +56,42 @@
       <div id="task-list"></div>
     </div>
 
-    <!-- Daily Tracker Tab -->
-    <div id="daily-tab" class="tab-content">
-      <div class="daily-tracker">
-        <div class="date-selector">
-          <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
-          <input type="date" id="date-picker" onchange="jumpToDate(this.value)">
-          <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
-        </div>
-        <div id="habits-grid"></div>
-        <div style="text-align:center;">
-          <button class="btn btn-save" onclick="saveDailyData()">💾 保存今日記錄</button>
-        </div>
+<!-- Daily Tracker Tab -->
+<div id="daily-tab" class="tab-content">
+  <div class="daily-tracker">
+    <div class="date-selector">
+      <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
+      <div class="current-date" id="current-date"></div>
+      <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
+    </div>
+
+    <!-- 習慣清單 -->
+    <div id="habits-grid" class="habits-grid">
+      <!-- 每個習慣會被 JS 塞進來 -->
+    </div>
+
+    <!-- 新增習慣區塊 -->
+    <div class="add-habit-box">
+      <h3>➕ 新增習慣</h3>
+      <div class="add-habit-form">
+        <select id="habit-icon">
+          <option value="💧">💧 喝水</option>
+          <option value="🏃‍♂️">🏃‍♂️ 運動</option>
+          <option value="📚">📚 閱讀</option>
+          <option value="🛏️">🛏️ 早睡</option>
+          <option value="🍎">🍎 健康飲食</option>
+        </select>
+        <input type="text" id="habit-name" placeholder="輸入習慣名稱...">
+        <input type="number" id="habit-target" placeholder="目標次數" min="1" value="1">
+        <button onclick="addCustomHabit()">新增</button>
       </div>
     </div>
+
+    <div style="text-align:center;margin-top:20px;">
+      <button class="btn btn-save" onclick="saveDailyData()">💾 保存今日記錄</button>
+    </div>
+  </div>
+</div>
 
     <!-- Weekly Review Tab -->
     <div id="weekly-tab" class="tab-content">
