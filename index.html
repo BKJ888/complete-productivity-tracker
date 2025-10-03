@@ -3,377 +3,773 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>生產力追蹤系統</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-  
+  <title>生產力追蹤系統 Pro</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
-    /* --- 1. Design System & Variables --- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     :root {
-      --font-family: 'Inter', sans-serif;
-      --primary-color: #4a90e2;
-      --primary-hover: #357abd;
-      --success-color: #50e3c2;
-      --warning-color: #f5a623;
-      --danger-color: #d0021b;
-      --text-color: #333;
-      --text-light: #888;
-      --bg-color: #f4f7f9;
+      --primary: #4a90e2;
+      --success: #28a745;
+      --warning: #ffc107;
+      --danger: #dc3545;
+      --bg: #f8f9fa;
       --card-bg: #ffffff;
-      --border-color: #e0e0e0;
-      --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      --border-radius: 12px;
+      --text: #2c3e50;
+      --border: #e0e0e0;
+      --shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
 
     body.dark-mode {
-      --text-color: #f0f0f0;
-      --text-light: #aaa;
-      --bg-color: #1a1a1a;
-      --card-bg: #2c2c2c;
-      --border-color: #444;
-      --shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    }
-
-    /* --- 2. General Styles & Reset --- */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
+      --bg: #1a1a1a;
+      --card-bg: #2d2d2d;
+      --text: #e0e0e0;
+      --border: #404040;
     }
 
     body {
-      font-family: var(--font-family);
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: background-color 0.3s, color 0.3s;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: all 0.3s ease;
       line-height: 1.6;
     }
 
     .container {
-      max-width: 900px;
-      margin: 40px auto;
+      max-width: 1200px;
+      margin: 0 auto;
       padding: 20px;
     }
 
-    /* --- 3. Header & Navigation --- */
     .header {
       text-align: center;
-      margin-bottom: 40px;
+      padding: 40px 20px;
+      background: linear-gradient(135deg, var(--primary) 0%, #667eea 100%);
+      border-radius: 20px;
+      color: white;
+      margin-bottom: 30px;
+      box-shadow: var(--shadow);
     }
+
     .header h1 {
-      font-size: 2.5em;
+      font-size: clamp(1.8rem, 5vw, 2.5rem);
       margin-bottom: 10px;
-    }
-    .header p {
-      font-size: 1.1em;
-      color: var(--text-light);
     }
 
     .nav-tabs {
       display: flex;
-      justify-content: center;
+      gap: 10px;
       margin-bottom: 30px;
-      background-color: var(--card-bg);
-      border-radius: var(--border-radius);
-      padding: 8px;
+      overflow-x: auto;
+      padding: 5px;
+    }
+
+    .nav-tab {
+      padding: 12px 20px;
+      border: none;
+      background: var(--card-bg);
+      color: var(--text);
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      white-space: nowrap;
       box-shadow: var(--shadow);
     }
-    .nav-tab {
-      flex: 1;
-      padding: 12px 15px;
-      border: none;
-      background: none;
-      color: var(--text-light);
-      font-size: 1em;
-      font-weight: 500;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: background-color 0.3s, color 0.3s;
-      text-align: center;
-    }
+
     .nav-tab:hover {
-      background-color: var(--bg-color);
-      color: var(--text-color);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
     }
+
     .nav-tab.active {
-      background-color: var(--primary-color);
+      background: var(--primary);
       color: white;
     }
 
     .tab-content {
       display: none;
     }
+
     .tab-content.active {
       display: block;
+      animation: fadeIn 0.3s ease;
     }
-    
-    /* Card Style for content */
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     .card {
-        background-color: var(--card-bg);
-        padding: 30px;
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow);
-        margin-bottom: 20px;
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow);
     }
 
-    /* --- 4. Pomodoro Timer Styles --- */
-    #timer-display {
-      font-size: 5em;
-      font-weight: 700;
+    .timer-display {
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: bold;
       font-family: 'Courier New', monospace;
-      color: var(--primary-color);
-    }
-    #timer-status {
-      font-size: 1.2em;
-      color: var(--text-light);
-    }
-    .timer-controls {
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        margin-top: 20px;
-    }
-    #current-task {
-      background: rgba(74, 144, 226, 0.1);
-      padding: 15px;
-      border-radius: 10px;
-      margin: 20px auto;
-      border-left: 4px solid var(--primary-color);
-      display: none; /* Controlled by JS */
-      max-width: 80%;
-    }
-    .task-input-group {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 30px;
+      margin: 20px 0;
+      color: var(--primary);
+      text-align: center;
     }
 
-    /* --- 5. General Component Styles (Buttons, Inputs) --- */
     .btn {
-      padding: 12px 25px;
+      padding: 12px 24px;
       border: none;
-      border-radius: 8px;
-      font-size: 1em;
-      font-weight: 500;
+      border-radius: 12px;
+      font-size: 1rem;
       cursor: pointer;
-      transition: all 0.2s ease-in-out;
+      transition: all 0.3s ease;
+      font-weight: 500;
     }
-    .btn:hover {
-        transform: translateY(-2px);
-        filter: brightness(1.1);
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
+
     .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
+      opacity: 0.5;
+      cursor: not-allowed;
     }
 
-    #start-btn { background-color: var(--success-color); color: #fff; }
-    #pause-btn { background-color: var(--warning-color); color: #fff; }
-    #reset-btn { background-color: var(--danger-color); color: #fff; }
-    #add-btn { background-color: var(--primary-color); color: #fff; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-success { background: var(--success); color: white; }
+    .btn-warning { background: var(--warning); color: white; }
+    .btn-danger { background: var(--danger); color: white; }
 
-    input[type="text"], input[type="number"], select {
-      flex: 1;
-      padding: 12px 15px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      font-size: 1.1em;
-      background-color: var(--bg-color);
-      color: var(--text-color);
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-    input:focus, select:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-    }
-
-    /* --- 6. Daily Tracker Styles --- */
-    .daily-tracker .date-selector {
+    .task-item {
+      background: var(--bg);
+      padding: 15px;
+      border-radius: 12px;
+      margin-bottom: 10px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 30px;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    #current-date {
-      font-size: 1.5em;
-      font-weight: 500;
-      margin: 0 20px;
-    }
-    .date-nav {
-      background: none;
-      border: none;
-      font-size: 1.5em;
-      cursor: pointer;
-      color: var(--primary-color);
-    }
-    .habits-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 20px;
-    }
-    .habit-item {
-      background-color: var(--card-bg);
-      border-radius: var(--border-radius);
+
+    .habit-card {
+      background: var(--card-bg);
+      border-radius: 12px;
       padding: 20px;
       text-align: center;
       box-shadow: var(--shadow);
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
     }
-    .habit-item:hover {
-      transform: translateY(-5px);
-    }
-    .habit-icon { font-size: 2.5em; }
-    .habit-name { font-weight: 500; margin: 10px 0; }
-    .habit-progress { color: var(--text-light); }
 
-    /* --- 7. Dark Mode Toggle --- */
+    .habit-icon {
+      font-size: 3rem;
+      margin-bottom: 10px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 10px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--success), #20c997);
+      transition: width 0.3s ease;
+    }
+
+    .habits-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+      flex-wrap: wrap;
+    }
+
+    .input-group input, .input-group select {
+      flex: 1;
+      min-width: 150px;
+      padding: 12px;
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      font-size: 1rem;
+      background: var(--card-bg);
+      color: var(--text);
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      background: var(--success);
+      color: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transform: translateX(400px);
+      transition: transform 0.3s ease;
+      z-index: 1000;
+    }
+
+    .notification.show {
+      transform: translateX(0);
+    }
+
     .dark-mode-toggle {
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-    }
-    .dark-mode-toggle button {
-        padding: 10px 15px;
-        border: none;
-        border-radius: 50%;
-        background: var(--card-bg);
-        color: var(--text-color);
-        box-shadow: var(--shadow);
-        cursor: pointer;
-        font-size: 1.5em;
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      background: var(--primary);
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 100;
     }
 
+    @media (max-width: 768px) {
+      .task-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <h1>🎯 生產力追蹤系統</h1>
+      <h1>🎯 生產力追蹤系統 Pro</h1>
       <p>番茄工作法 × 習慣追蹤 × 週間反思 × 月度報告 × 目標管理</p>
     </div>
 
     <div class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('pomodoro')">🍅 番茄工作法</button>
-      <button class="nav-tab" onclick="switchTab('daily')">📅 每日追蹤</button>
-      <button class="nav-tab" onclick="switchTab('weekly')">📊 週間反思</button>
-      <button class="nav-tab" onclick="switchTab('monthly')">📈 月度報告</button>
-      <button class="nav-tab" onclick="switchTab('goals')">🎯 目標管理</button>
+      <button class="nav-tab active" data-tab="pomodoro">🍅 番茄鐘</button>
+      <button class="nav-tab" data-tab="daily">📅 每日追蹤</button>
+      <button class="nav-tab" data-tab="weekly">📊 週間反思</button>
+      <button class="nav-tab" data-tab="monthly">📈 月度報告</button>
+      <button class="nav-tab" data-tab="goals">🎯 目標管理</button>
     </div>
 
+    <!-- 番茄工作法 -->
     <div id="pomodoro-tab" class="tab-content active">
-        <div class="card" style="text-align:center;">
-            <div id="timer-display">25:00</div>
-            <div id="timer-status">⏰ 準備開始工作</div>
-
-            <div style="margin:20px 0; display:flex; justify-content:center; align-items:center; gap:15px;">
-                <label>工作:</label>
-                <input type="number" id="work-time" value="25" style="width:70px;">
-                <label>休息:</label>
-                <input type="number" id="break-time" value="5" style="width:70px;">
-                <button onclick="setCustomTime()" class="btn" style="background:var(--primary-color); color:white;">設定</button>
-            </div>
-
-            <div id="current-task">
-                <strong>目前任務：</strong><span id="current-task-name"></span>
-            </div>
-
-            <div class="timer-controls">
-                <button id="start-btn" class="btn" disabled>▶️ 開始</button>
-                <button id="pause-btn" class="btn" disabled>⏸️ 暫停</button>
-                <button id="reset-btn" class="btn">🔄 重設</button>
-            </div>
+      <div class="card" style="text-align: center;">
+        <div class="timer-display" id="timer-display">25:00</div>
+        <div id="timer-status" style="font-size: 1.3rem; margin-bottom: 20px;">⏰ 準備開始工作</div>
+        
+        <div class="input-group" style="justify-content: center;">
+          <label>工作: <input type="number" id="work-time" value="25" style="width:80px;" min="1"></label>
+          <label>休息: <input type="number" id="break-time" value="5" style="width:80px;" min="1"></label>
+          <button class="btn btn-primary" id="set-time-btn">設定</button>
         </div>
-        <div class="card">
-            <div class="task-input-group">
-                <input type="text" id="task-input" placeholder="輸入要專注的新任務...">
-                <button id="add-btn" class="btn">➕ 新增</button>
-            </div>
-            <div id="task-list">
-                </div>
+
+        <div id="current-task" style="background:#e3f2fd; padding:15px; border-radius:10px; margin:20px 0; display:none;">
+          <strong>目前任務:</strong> <span id="current-task-name"></span>
         </div>
+
+        <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
+          <button id="start-btn" class="btn btn-success">▶️ 開始</button>
+          <button id="pause-btn" class="btn btn-warning" disabled>⏸️ 暫停</button>
+          <button id="reset-btn" class="btn btn-danger">🔄 重設</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>任務清單</h3>
+        <div class="input-group">
+          <input type="text" id="task-input" placeholder="輸入新任務...">
+          <button class="btn btn-primary" id="add-task-btn">➕ 新增</button>
+        </div>
+        <div id="task-list"></div>
+      </div>
     </div>
 
+    <!-- 每日追蹤 -->
     <div id="daily-tab" class="tab-content">
-        <div class="daily-tracker card">
-            <div class="date-selector">
-                <button class="date-nav" onclick="changeDate(-1)">◀️</button>
-                <div class="current-date" id="current-date"></div>
-                <button class="date-nav" onclick="changeDate(1)">▶️</button>
-            </div>
-            <div id="habits-grid" class="habits-grid">
-                </div>
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+          <button class="btn" id="prev-day">◀️ 前一天</button>
+          <div id="current-date" style="font-size:1.3rem; font-weight:bold;"></div>
+          <button class="btn" id="next-day">後一天 ▶️</button>
         </div>
-        <div class="card">
-            <h3>➕ 新增自訂習慣</h3>
-            <div class="add-habit-form" style="display:flex; gap:10px; margin-top:15px;">
-                <select id="habit-icon">
-                    <option value="💧">💧 喝水</option>
-                    <option value="🏃‍♂️">🏃‍♂️ 運動</option>
-                    <option value="📚">📚 閱讀</option>
-                    <option value="🛏️">🛏️ 早睡</option>
-                    <option value="🍎">🍎 健康飲食</option>
-                </select>
-                <input type="text" id="habit-name" placeholder="輸入習慣名稱...">
-                <input type="number" id="habit-target" placeholder="目標次數" min="1" value="1" style="flex:0.5;">
-                <button onclick="addCustomHabit()" class="btn" style="background:var(--primary-color); color:white;">新增</button>
-            </div>
+        
+        <div id="habits-grid" class="habits-grid"></div>
+        
+        <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+          <h3>➕ 新增習慣</h3>
+          <div class="input-group">
+            <select id="habit-icon">
+              <option value="💧">💧 喝水</option>
+              <option value="🏃">🏃 運動</option>
+              <option value="📚">📚 閱讀</option>
+              <option value="🛏️">🛏️ 早睡</option>
+              <option value="🍎">🍎 健康飲食</option>
+              <option value="🧘">🧘 冥想</option>
+            </select>
+            <input type="text" id="habit-name" placeholder="習慣名稱">
+            <input type="number" id="habit-target" placeholder="目標" min="1" value="1" style="width:100px;">
+            <button class="btn btn-success" id="add-habit-btn">新增</button>
+          </div>
         </div>
+      </div>
     </div>
 
+    <!-- 週間反思 -->
     <div id="weekly-tab" class="tab-content">
-        <div class="card">
-            <h2>📊 本週進度總覽</h2>
-            <div id="progress-overview" style="margin-top:15px;"></div>
-            <div id="habits-chart"></div>
+      <div class="card">
+        <h2>📊 本週統計</h2>
+        <div id="weekly-stats" style="margin-top:20px;">
+          <p>本週完成任務: <strong id="weekly-tasks">0</strong></p>
+          <p>本週番茄鐘: <strong id="weekly-pomodoros">0</strong></p>
         </div>
-        <div class="card">
-            <h2>🎉 本週最成功的三件事</h2>
-            <div id="achievements-list"></div>
-        </div>
+      </div>
     </div>
 
+    <!-- 月度報告 -->
     <div id="monthly-tab" class="tab-content">
-        <div class="card">
-            <h2>📈 月度報告</h2>
-            <canvas id="monthlyChart" style="max-height:400px;"></canvas>
-            <div id="heatmap" style="margin-top:20px;"></div>
-        </div>
+      <div class="card">
+        <h2>📈 月度報告</h2>
+        <canvas id="monthly-chart"></canvas>
+      </div>
     </div>
 
+    <!-- 目標管理 -->
     <div id="goals-tab" class="tab-content">
-        <div class="card">
-            <h2>🎯 長期目標管理</h2>
-            <div style="display:flex; gap:10px; margin-bottom:20px;">
-                <input type="text" id="goal-input" placeholder="輸入長期目標...">
-                <input type="number" id="goal-target" placeholder="目標次數" style="flex:0.5;">
-                <button onclick="addGoal()" class="btn" style="background:var(--success-color);color:#fff;">新增</button>
-            </div>
-            <div id="goal-list"></div>
+      <div class="card">
+        <h2>🎯 長期目標</h2>
+        <div class="input-group">
+          <input type="text" id="goal-input" placeholder="輸入長期目標">
+          <input type="number" id="goal-target" placeholder="目標次數" style="width:150px;" min="1">
+          <button class="btn btn-success" id="add-goal-btn">新增</button>
         </div>
+        <div id="goal-list"></div>
+      </div>
     </div>
   </div>
 
-  <div class="dark-mode-toggle">
-    <button onclick="toggleDarkMode()">🌙</button>
-  </div>
-
+  <button class="dark-mode-toggle" id="dark-mode-btn">🌙</button>
   <div id="notification" class="notification"></div>
 
   <script>
-    // Simple dark mode toggle function to add to your app.js or keep here
-    function toggleDarkMode() {
-        document.body.classList.toggle('dark-mode');
+    // 全域變數
+    let timer = null;
+    let timeLeft = 25 * 60;
+    let isWorking = true;
+    let isPaused = true;
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    let habits = JSON.parse(localStorage.getItem('habits')) || [
+      {id: 1, icon: '💧', name: '喝水', target: 8, completed: 0},
+      {id: 2, icon: '🏃', name: '運動', target: 1, completed: 0},
+      {id: 3, icon: '📚', name: '閱讀', target: 1, completed: 0}
+    ];
+    let currentDate = new Date().toISOString().split('T')[0];
+    let goals = JSON.parse(localStorage.getItem('goals')) || [];
+    let selectedTaskId = null;
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      setupEventListeners();
+      renderTasks();
+      renderHabits();
+      renderGoals();
+      updateDateDisplay();
+      loadDailyData();
+      renderWeeklyStats();
+    });
+
+    // 設置事件監聽器
+    function setupEventListeners() {
+      // 標籤切換
+      document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const tabName = tab.getAttribute('data-tab');
+          switchTab(tabName);
+        });
+      });
+
+      // 番茄鐘按鈕
+      document.getElementById('set-time-btn').addEventListener('click', setCustomTime);
+      document.getElementById('start-btn').addEventListener('click', startTimer);
+      document.getElementById('pause-btn').addEventListener('click', pauseTimer);
+      document.getElementById('reset-btn').addEventListener('click', resetTimer);
+
+      // 任務按鈕
+      document.getElementById('add-task-btn').addEventListener('click', addTask);
+      document.getElementById('task-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTask();
+      });
+
+      // 日期按鈕
+      document.getElementById('prev-day').addEventListener('click', () => changeDate(-1));
+      document.getElementById('next-day').addEventListener('click', () => changeDate(1));
+
+      // 習慣按鈕
+      document.getElementById('add-habit-btn').addEventListener('click', addCustomHabit);
+
+      // 目標按鈕
+      document.getElementById('add-goal-btn').addEventListener('click', addGoal);
+
+      // 深色模式
+      document.getElementById('dark-mode-btn').addEventListener('click', toggleDarkMode);
     }
 
-    // You can keep the rest of your JS in app.js
+    // 切換標籤
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      
+      document.getElementById(tabName + '-tab').classList.add('active');
+      document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+      
+      if (tabName === 'weekly') renderWeeklyStats();
+      if (tabName === 'monthly') renderMonthlyChart();
+    }
+
+    // 番茄鐘功能
+    function setCustomTime() {
+      const work = parseInt(document.getElementById('work-time').value) || 25;
+      const breakTime = parseInt(document.getElementById('break-time').value) || 5;
+      timeLeft = work * 60;
+      isWorking = true;
+      updateDisplay();
+      showNotification('時間已設定');
+    }
+
+    function startTimer() {
+      if (!isPaused) return;
+      
+      isPaused = false;
+      document.getElementById('start-btn').disabled = true;
+      document.getElementById('pause-btn').disabled = false;
+      
+      timer = setInterval(() => {
+        timeLeft--;
+        updateDisplay();
+        
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          
+          if (isWorking && selectedTaskId) {
+            const task = tasks.find(t => t.id === selectedTaskId);
+            if (task) {
+              task.pomodoros = (task.pomodoros || 0) + 1;
+              saveTasks();
+              renderTasks();
+            }
+          }
+          
+          isWorking = !isWorking;
+          timeLeft = isWorking ? 
+            parseInt(document.getElementById('work-time').value) * 60 : 
+            parseInt(document.getElementById('break-time').value) * 60;
+          
+          showNotification(isWorking ? '開始工作!' : '休息時間!');
+          isPaused = true;
+          document.getElementById('start-btn').disabled = false;
+          document.getElementById('pause-btn').disabled = true;
+          updateDisplay();
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      isPaused = true;
+      clearInterval(timer);
+      document.getElementById('start-btn').disabled = false;
+      document.getElementById('pause-btn').disabled = true;
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      isWorking = true;
+      timeLeft = parseInt(document.getElementById('work-time').value) * 60;
+      updateDisplay();
+    }
+
+    function updateDisplay() {
+      const mins = Math.floor(timeLeft / 60);
+      const secs = timeLeft % 60;
+      document.getElementById('timer-display').textContent = 
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      document.getElementById('timer-status').textContent = 
+        isWorking ? (isPaused ? '⏰ 準備開始工作' : '⏰ 工作中') : (isPaused ? '☕ 準備休息' : '☕ 休息中');
+    }
+
+    // 任務管理
+    function addTask() {
+      const input = document.getElementById('task-input');
+      if (input.value.trim()) {
+        tasks.push({
+          id: Date.now(),
+          text: input.value,
+          completed: false,
+          pomodoros: 0
+        });
+        input.value = '';
+        saveTasks();
+        renderTasks();
+        showNotification('任務已新增');
+      }
+    }
+
+    function renderTasks() {
+      const list = document.getElementById('task-list');
+      list.innerHTML = tasks.map(task => `
+        <div class="task-item">
+          <div style="display:flex; align-items:center; gap:10px; flex:1;">
+            <input type="checkbox" ${task.completed ? 'checked' : ''} 
+                   onchange="toggleTask(${task.id})">
+            <span style="${task.completed ? 'text-decoration:line-through;opacity:0.6;' : ''}">${task.text}</span>
+            <span style="color:var(--primary);">🍅 ${task.pomodoros || 0}</span>
+          </div>
+          <div style="display:flex; gap:5px;">
+            <button class="btn btn-primary" onclick="selectTask(${task.id})" 
+                    style="padding:8px 16px;">選擇</button>
+            <button class="btn btn-danger" onclick="deleteTask(${task.id})"
+                    style="padding:8px 16px;">刪除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleTask(id) {
+      const task = tasks.find(t => t.id === id);
+      task.completed = !task.completed;
+      saveTasks();
+      renderTasks();
+    }
+
+    function selectTask(id) {
+      selectedTaskId = id;
+      const task = tasks.find(t => t.id === id);
+      document.getElementById('current-task').style.display = 'block';
+      document.getElementById('current-task-name').textContent = task.text;
+      showNotification('任務已選擇: ' + task.text);
+    }
+
+    function deleteTask(id) {
+      if (selectedTaskId === id) {
+        selectedTaskId = null;
+        document.getElementById('current-task').style.display = 'none';
+      }
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+      renderTasks();
+      showNotification('任務已刪除');
+    }
+
+    function saveTasks() {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    // 習慣追蹤
+    function renderHabits() {
+      const grid = document.getElementById('habits-grid');
+      grid.innerHTML = habits.map(habit => `
+        <div class="habit-card">
+          <div class="habit-icon">${habit.icon}</div>
+          <h4>${habit.name}</h4>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min((habit.completed/habit.target)*100, 100)}%"></div>
+          </div>
+          <p>${habit.completed} / ${habit.target}</p>
+          <button class="btn btn-primary" onclick="incrementHabit(${habit.id})"
+                  style="margin-top:10px;">+1</button>
+        </div>
+      `).join('');
+    }
+
+    function incrementHabit(id) {
+      const habit = habits.find(h => h.id === id);
+      if (habit.completed < habit.target) {
+        habit.completed++;
+        saveHabits();
+        renderHabits();
+        if (habit.completed === habit.target) {
+          showNotification(`🎉 ${habit.name} 目標達成!`);
+        }
+      }
+    }
+
+    function addCustomHabit() {
+      const icon = document.getElementById('habit-icon').value;
+      const name = document.getElementById('habit-name').value;
+      const target = parseInt(document.getElementById('habit-target').value) || 1;
+      
+      if (name.trim()) {
+        habits.push({
+          id: Date.now(),
+          icon,
+          name,
+          target,
+          completed: 0
+        });
+        document.getElementById('habit-name').value = '';
+        saveHabits();
+        renderHabits();
+        showNotification('習慣已新增');
+      }
+    }
+
+    function saveHabits() {
+      localStorage.setItem('habits', JSON.stringify(habits));
+      saveDailyData();
+    }
+
+    // 日期管理
+    function updateDateDisplay() {
+      const date = new Date(currentDate);
+      document.getElementById('current-date').textContent = 
+        date.toLocaleDateString('zh-TW', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function changeDate(days) {
+      const date = new Date(currentDate);
+      date.setDate(date.getDate() + days);
+      currentDate = date.toISOString().split('T')[0];
+      updateDateDisplay();
+      loadDailyData();
+    }
+
+    function saveDailyData() {
+      const data = JSON.parse(localStorage.getItem('dailyData')) || {};
+      data[currentDate] = { habits: habits.map(h => ({...h})) };
+      localStorage.setItem('dailyData', JSON.stringify(data));
+    }
+
+    function loadDailyData() {
+      const data = JSON.parse(localStorage.getItem('dailyData')) || {};
+      if (data[currentDate]) {
+        habits = data[currentDate].habits;
+      } else {
+        habits = JSON.parse(localStorage.getItem('habits')) || habits;
+        habits = habits.map(h => ({...h, completed: 0}));
+      }
+      renderHabits();
+    }
+
+    // 目標管理
+    function addGoal() {
+      const input = document.getElementById('goal-input');
+      const target = document.getElementById('goal-target').value;
+      if (input.value.trim() && target) {
+        goals.push({
+          id: Date.now(),
+          text: input.value,
+          target: parseInt(target),
+          current: 0
+        });
+        input.value = '';
+        document.getElementById('goal-target').value = '';
+        saveGoals();
+        renderGoals();
+        showNotification('目標已新增');
+      }
+    }
+
+    function renderGoals() {
+      const list = document.getElementById('goal-list');
+      list.innerHTML = goals.map(goal => `
+        <div class="card">
+          <h4>${goal.text}</h4>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${Math.min((goal.current/goal.target)*100, 100)}%"></div>
+          </div>
+          <p>${goal.current} / ${goal.target}</p>
+          <button class="btn btn-primary" onclick="incrementGoal(${goal.id})"
+                  style="margin-top:10px;">+1</button>
+        </div>
+      `).join('');
+    }
+
+    function incrementGoal(id) {
+      const goal = goals.find(g => g.id === id);
+      if (goal.current < goal.target) {
+        goal.current++;
+        saveGoals();
+        renderGoals();
+        if (goal.current === goal.target) {
+          showNotification(`🎉 目標達成: ${goal.text}!`);
+        }
+      }
+    }
+
+    function saveGoals() {
+      localStorage.setItem('goals', JSON.stringify(goals));
+    }
+
+    // 週間統計
+    function renderWeeklyStats() {
+      const completedTasks = tasks.filter(t => t.completed).length;
+      const totalPomodoros = tasks.reduce((sum, t) => sum + (t.pomodoros || 0), 0);
+      
+      document.getElementById('weekly-tasks').textContent = completedTasks;
+      document.getElementById('weekly-pomodoros').textContent = totalPomodoros;
+    }
+
+    // 月度圖表
+    function renderMonthlyChart() {
+      const ctx = document.getElementById('monthly-chart');
+      if (!ctx) return;
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['第1週', '第2週', '第3週', '第4週'],
+          datasets: [{
+            label: '完成任務數',
+            data: [5, 8, 12, 10],
+            backgroundColor: '#4a90e2'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true
+        }
+      });
+    }
+
+    // 深色模式
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      document.getElementById('dark-mode-btn').textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('darkMode', isDark);
+    }
+
+    // 檢查深色模式設定
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('dark-mode-btn').textContent = '☀️';
+    }
+
+    // 通知系統
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      notification.textContent = message;
+      notification.classList.add('show');
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
   </script>
-  <script src="js/app.js"></script>
 </body>
 </html>
