@@ -27,76 +27,82 @@
 
     <!-- Pomodoro Tab -->
     <div id="pomodoro-tab" class="tab-content active">
-      <div style="text-align:center; margin-bottom:40px; padding:30px; background:#f8f9fa; border-radius:15px;">
-        <div id="timer-display" style="font-size:4em; font-weight:bold; font-family:'Courier New', monospace; margin-bottom:20px; color:#007bff;">25:00</div>
-        <div id="timer-status" style="font-size:1.5em; margin-bottom:20px;">⏰ 準備開始工作</div>
+      <div class="pomodoro-card">
+        <div id="timer-display" class="timer-display">25:00</div>
+        <div id="timer-status" class="timer-status">⏰ 準備開始工作</div>
 
         <!-- 自訂時間設定 -->
-        <div style="margin:20px 0;">
-          <label>工作時間(分鐘): </label>
-          <input type="number" id="work-time" value="25" style="width:60px;">
-          <label>休息時間(分鐘): </label>
-          <input type="number" id="break-time" value="5" style="width:60px;">
-          <button onclick="setCustomTime()">設定</button>
+        <div class="time-settings">
+          <div class="time-input">
+            <label>工作</label>
+            <input type="number" id="work-time" value="25" min="1"> 分鐘
+          </div>
+          <div class="time-input">
+            <label>休息</label>
+            <input type="number" id="break-time" value="5" min="1"> 分鐘
+          </div>
+          <button class="btn-primary" onclick="setCustomTime()">套用</button>
         </div>
 
-        <div id="current-task" style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border-left:4px solid #2196f3; display:none;">
+        <div id="current-task" class="current-task" style="display:none;">
           <strong>目前任務：</strong><span id="current-task-name"></span>
         </div>
-        <div style="display:flex; justify-content:center; gap:15px;">
-          <button id="start-btn" class="btn" style="background:#28a745; color:white;" disabled>▶️ 開始</button>
-          <button id="pause-btn" class="btn" style="background:#ffc107; color:white;" disabled>⏸️ 暫停</button>
-          <button id="reset-btn" class="btn" style="background:#dc3545; color:white;">🔄 重設</button>
+
+        <div class="btn-group">
+          <button id="start-btn" class="btn-success" disabled>▶️ 開始</button>
+          <button id="pause-btn" class="btn-warning" disabled>⏸️ 暫停</button>
+          <button id="reset-btn" class="btn-danger">🔄 重設</button>
         </div>
       </div>
-      <div style="display:flex; gap:10px; margin-bottom:30px;">
-        <input type="text" id="task-input" placeholder="輸入新任務..." style="flex:1; padding:12px 15px; border:2px solid #e0e0e0; border-radius:25px; font-size:1.1em;">
-        <button id="add-btn" class="btn" style="background:#007bff; color:white;">➕ 新增任務</button>
+
+      <!-- 任務輸入 -->
+      <div class="task-input-box">
+        <input type="text" id="task-input" placeholder="輸入新任務...">
+        <button id="add-btn" class="btn-primary">➕ 新增任務</button>
       </div>
-      <div id="task-list"></div>
+
+      <!-- 任務清單 -->
+      <div id="task-list" class="task-list"></div>
     </div>
 
-<!-- Daily Tracker Tab -->
-<div id="daily-tab" class="tab-content">
-  <div class="daily-tracker">
-    <div class="date-selector">
-      <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
-      <div class="current-date" id="current-date"></div>
-      <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
-    </div>
+    <!-- Daily Tracker Tab -->
+    <div id="daily-tab" class="tab-content">
+      <div class="daily-tracker">
+        <div class="date-selector">
+          <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
+          <div class="current-date" id="current-date"></div>
+          <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
+        </div>
 
-    <!-- 習慣清單 -->
-    <div id="habits-grid" class="habits-grid">
-      <!-- 每個習慣會被 JS 塞進來 -->
-    </div>
+        <!-- 習慣清單 -->
+        <div id="habits-grid" class="habits-grid"></div>
 
-    <!-- 新增習慣區塊 -->
-    <div class="add-habit-box">
-      <h3>➕ 新增習慣</h3>
-      <div class="add-habit-form">
-        <select id="habit-icon">
-          <option value="💧">💧 喝水</option>
-          <option value="🏃‍♂️">🏃‍♂️ 運動</option>
-          <option value="📚">📚 閱讀</option>
-          <option value="🛏️">🛏️ 早睡</option>
-          <option value="🍎">🍎 健康飲食</option>
-        </select>
-        <input type="text" id="habit-name" placeholder="輸入習慣名稱...">
-        <input type="number" id="habit-target" placeholder="目標次數" min="1" value="1">
-        <button onclick="addCustomHabit()">新增</button>
+        <!-- 新增習慣區塊 -->
+        <div class="add-habit-box">
+          <h3>➕ 新增習慣</h3>
+          <div class="add-habit-form">
+            <select id="habit-icon">
+              <option value="💧">💧 喝水</option>
+              <option value="🏃‍♂️">🏃‍♂️ 運動</option>
+              <option value="📚">📚 閱讀</option>
+              <option value="🛏️">🛏️ 早睡</option>
+              <option value="🍎">🍎 健康飲食</option>
+            </select>
+            <input type="text" id="habit-name" placeholder="輸入習慣名稱...">
+            <input type="number" id="habit-target" placeholder="目標次數" min="1" value="1">
+            <button onclick="addCustomHabit()">新增</button>
+          </div>
+        </div>
+
+        <div style="text-align:center;margin-top:20px;">
+          <button class="btn btn-save" onclick="saveDailyData()">💾 保存今日記錄</button>
+        </div>
       </div>
     </div>
-
-    <div style="text-align:center;margin-top:20px;">
-      <button class="btn btn-save" onclick="saveDailyData()">💾 保存今日記錄</button>
-    </div>
-  </div>
-</div>
 
     <!-- Weekly Review Tab -->
     <div id="weekly-tab" class="tab-content">
-      <div id="progress-overview"></div>
-      <div id="habits-chart"></div>
+      <div id="progress-overview" class="weekly-card"></div>
       <div class="reflection-section">
         <div class="reflection-title">🎉 本週最成功的三件事</div>
         <div id="achievements-list"></div>
@@ -105,26 +111,29 @@
 
     <!-- 月度報告 Tab -->
     <div id="monthly-tab" class="tab-content">
-      <h2>📈 月度報告</h2>
-      <canvas id="monthlyChart" style="max-height:400px;"></canvas>
-      <div id="heatmap" style="margin-top:20px;"></div>
+      <div class="monthly-card">
+        <h2>📈 月度報告</h2>
+        <canvas id="monthlyChart" style="max-height:400px;"></canvas>
+      </div>
     </div>
 
     <!-- 目標管理 Tab -->
     <div id="goals-tab" class="tab-content">
-      <h2>🎯 長期目標管理</h2>
-      <div style="display:flex;gap:10px;margin-bottom:20px;">
-        <input type="text" id="goal-input" placeholder="輸入長期目標..." style="flex:2;padding:10px;border-radius:8px;border:1px solid #ccc;">
-        <input type="number" id="goal-target" placeholder="目標次數" style="width:120px;padding:10px;border-radius:8px;border:1px solid #ccc;">
-        <button onclick="addGoal()" style="padding:10px 20px;border:none;background:#28a745;color:#fff;border-radius:8px;cursor:pointer;">新增</button>
+      <div class="goals-card">
+        <h2>🎯 長期目標管理</h2>
+        <div class="goal-inputs">
+          <input type="text" id="goal-input" placeholder="輸入長期目標...">
+          <input type="number" id="goal-target" placeholder="目標次數">
+          <button onclick="addGoal()" class="btn-success">新增</button>
+        </div>
+        <div id="goal-list"></div>
       </div>
-      <div id="goal-list"></div>
     </div>
   </div>
 
   <!-- 深色模式切換按鈕 -->
   <div style="position:fixed;bottom:20px;right:20px;">
-    <button onclick="toggleDarkMode()" style="padding:10px 15px;border:none;border-radius:50%;background:#333;color:#fff;cursor:pointer;">🌙</button>
+    <button onclick="toggleDarkMode()" class="darkmode-btn">🌙</button>
   </div>
 
   <!-- 通知 -->
