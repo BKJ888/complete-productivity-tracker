@@ -1,171 +1,106 @@
-<!-- 在 nav-tabs 加入新頁籤 -->
-<div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('pomodoro')">🍅 番茄工作法</button>
-    <button class="nav-tab" onclick="switchTab('daily')">📅 每日追蹤</button>
-    <button class="nav-tab" onclick="switchTab('weekly')">📊 週間反思</button>
-    <button class="nav-tab" onclick="switchTab('monthly')">📈 月度報告</button>
-    <button class="nav-tab" onclick="switchTab('goals')">🎯 目標管理</button>
-</div>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>生產力追蹤系統</title>
+  <!-- 外部 CSS -->
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🎯 完整生產力追蹤系統</h1>
+      <p>番茄工作法 × 習慣追蹤 × 週間反思 × 目標管理</p>
+    </div>
 
-<!-- 新增：月度報告 -->
-<div id="monthly-tab" class="tab-content">
-    <h2>📈 月度報告</h2>
-    <canvas id="monthlyChart" style="max-height:400px;"></canvas>
-    <div id="heatmap" style="margin-top:20px;"></div>
-</div>
+    <!-- 導覽 Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('pomodoro')">🍅 番茄工作法</button>
+      <button class="nav-tab" onclick="switchTab('daily')">📅 每日追蹤</button>
+      <button class="nav-tab" onclick="switchTab('weekly')">📊 週間反思</button>
+      <button class="nav-tab" onclick="switchTab('monthly')">📈 月度報告</button>
+      <button class="nav-tab" onclick="switchTab('goals')">🎯 目標管理</button>
+    </div>
 
-<!-- 新增：目標管理 -->
-<div id="goals-tab" class="tab-content">
-    <h2>🎯 長期目標管理</h2>
-    <div style="display:flex;gap:10px;margin-bottom:20px;">
+    <!-- Pomodoro Tab -->
+    <div id="pomodoro-tab" class="tab-content active">
+      <div style="text-align:center; margin-bottom:40px; padding:30px; background:#f8f9fa; border-radius:15px;">
+        <div id="timer-display" style="font-size:4em; font-weight:bold; font-family:'Courier New', monospace; margin-bottom:20px; color:#007bff;">25:00</div>
+        <div id="timer-status" style="font-size:1.5em; margin-bottom:20px;">⏰ 準備開始工作</div>
+        <div id="current-task" style="background:#e3f2fd; padding:15px; border-radius:10px; margin-bottom:20px; border-left:4px solid #2196f3; display:none;">
+          <strong>目前任務：</strong><span id="current-task-name"></span>
+        </div>
+        <div style="display:flex; justify-content:center; gap:15px;">
+          <button id="start-btn" class="btn" style="background:#28a745; color:white;" disabled>▶️ 開始</button>
+          <button id="pause-btn" class="btn" style="background:#ffc107; color:white;" disabled>⏸️ 暫停</button>
+          <button id="reset-btn" class="btn" style="background:#dc3545; color:white;">🔄 重設</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-bottom:30px;">
+        <input type="text" id="task-input" placeholder="輸入新任務..." style="flex:1; padding:12px 15px; border:2px solid #e0e0e0; border-radius:25px; font-size:1.1em;">
+        <button id="add-btn" class="btn" style="background:#007bff; color:white;">➕ 新增任務</button>
+      </div>
+      <div id="task-list"></div>
+    </div>
+
+    <!-- Daily Tracker Tab -->
+    <div id="daily-tab" class="tab-content">
+      <!-- 保留你原本的每日追蹤程式區塊 -->
+      <div class="daily-tracker">
+        <div class="date-selector">
+          <button class="date-nav" onclick="changeDate(-1)">◀️ 前一天</button>
+          <div class="current-date" id="current-date"></div>
+          <button class="date-nav" onclick="changeDate(1)">後一天 ▶️</button>
+        </div>
+        <div id="habits-grid"></div>
+        <div style="text-align:center;">
+          <button class="btn btn-save" onclick="saveDailyData()">💾 保存今日記錄</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weekly Review Tab -->
+    <div id="weekly-tab" class="tab-content">
+      <!-- 保留你原本的週間反思程式區塊 -->
+      <div id="progress-overview"></div>
+      <div id="habits-chart"></div>
+      <div class="reflection-section">
+        <div class="reflection-title">🎉 本週最成功的三件事</div>
+        <div id="achievements-list"></div>
+      </div>
+    </div>
+
+    <!-- 月度報告 Tab -->
+    <div id="monthly-tab" class="tab-content">
+      <h2>📈 月度報告</h2>
+      <canvas id="monthlyChart" style="max-height:400px;"></canvas>
+      <div id="heatmap" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- 目標管理 Tab -->
+    <div id="goals-tab" class="tab-content">
+      <h2>🎯 長期目標管理</h2>
+      <div style="display:flex;gap:10px;margin-bottom:20px;">
         <input type="text" id="goal-input" placeholder="輸入長期目標..." style="flex:2;padding:10px;border-radius:8px;border:1px solid #ccc;">
         <input type="number" id="goal-target" placeholder="目標次數" style="width:120px;padding:10px;border-radius:8px;border:1px solid #ccc;">
         <button onclick="addGoal()" style="padding:10px 20px;border:none;background:#28a745;color:#fff;border-radius:8px;cursor:pointer;">新增</button>
+      </div>
+      <div id="goal-list"></div>
     </div>
-    <div id="goal-list"></div>
-</div>
+  </div>
 
-<!-- 深色模式切換 -->
-<div style="position:fixed;bottom:20px;right:20px;">
+  <!-- 深色模式切換按鈕 -->
+  <div style="position:fixed;bottom:20px;right:20px;">
     <button onclick="toggleDarkMode()" style="padding:10px 15px;border:none;border-radius:50%;background:#333;color:#fff;cursor:pointer;">🌙</button>
-</div>
+  </div>
 
-<!-- Chart.js CDN -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- 通知 -->
+  <div id="notification" class="notification"></div>
 
-<script>
-/* ====== 智能提醒 / 隨機鼓勵語 ====== */
-const encouragements = ["太棒了！繼續保持🔥", "💪 你正在進步", "👏 很棒的堅持", "🌟 成就+1", "🚀 前進一小步"];
-function randomEncouragement(){
-    return encouragements[Math.floor(Math.random()*encouragements.length)];
-}
-
-/* ====== 成就系統 (徽章) ====== */
-function checkAchievements(habitId){
-    let totalCount = 0;
-    Object.keys(localStorage).forEach(key=>{
-        if(key.startsWith("habits_")){
-            const data = JSON.parse(localStorage.getItem(key) || '{}');
-            if(data[habitId]?.completed) totalCount++;
-        }
-    });
-    if(totalCount === 7) showNotification("🏅 獲得徽章：連續完成7天！");
-    if(totalCount === 30) showNotification("🎖️ 獲得徽章：30次堅持達成！");
-}
-
-/* ====== 任務標籤與優先級 ====== */
-const priorityLevels = ["最低", "低", "中", "高", "最高"];
-function addTask(){
-    const taskText = document.getElementById('task-input').value.trim();
-    if(!taskText) return;
-
-    const tag = prompt("輸入任務標籤 (可留空):") || "";
-    const priority = prompt("輸入優先級 (1最低 ~ 5最高):", "3");
-
-    const newTask = {
-        id: Date.now(),
-        task: taskText,
-        tag: tag,
-        priority: parseInt(priority),
-        startTime: '',
-        endTime: '',
-        completed: false,
-        notes: '',
-        date: new Date().toLocaleDateString()
-    };
-    sessions.push(newTask);
-    document.getElementById('task-input').value = '';
-    updateTaskDisplay();
-}
-
-/* 修改 updateTaskDisplay，加上標籤與優先級顯示 */
-function updateTaskDisplay(){
-    const taskList = document.getElementById('task-list');
-    if(sessions.length === 0){
-        taskList.innerHTML = '<div style="text-align:center;padding:60px;color:#666;">還沒有任務</div>';
-        return;
-    }
-    taskList.innerHTML = sessions.map(session=>`
-        <div style="border:2px solid ${currentSession?.id===session.id?'#007bff':'#e0e0e0'};border-radius:15px;padding:15px;margin-bottom:10px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-                <div>
-                    <strong>${session.task}</strong> <span style="color:#888;">[${session.tag||'無標籤'}]</span> 
-                    <span style="color:${session.priority>=4?'red':'#666'};">優先級:${priorityLevels[session.priority-1]}</span>
-                </div>
-                <button onclick="deleteTask(${session.id})" style="background:#dc3545;color:#fff;border:none;padding:5px 10px;border-radius:5px;">🗑️</button>
-            </div>
-        </div>
-    `).join('');
-}
-
-/* ====== 月度報告 Chart.js ====== */
-function loadMonthlyReport(){
-    const ctx = document.getElementById("monthlyChart").getContext("2d");
-    let days = [];
-    let values = [];
-    for(let i=1;i<=30;i++){
-        const d = new Date();
-        d.setDate(i);
-        days.push(i+"日");
-        const key = d.toDateString();
-        const habits = JSON.parse(localStorage.getItem(`habits_${key}`) || '{}');
-        values.push(Object.values(habits).filter(h=>h.completed).length);
-    }
-    new Chart(ctx, {
-        type:"bar",
-        data:{
-            labels:days,
-            datasets:[{label:"每日完成習慣數",data:values,backgroundColor:"#667eea"}]
-        },
-        options:{responsive:true}
-    });
-}
-
-/* ====== 長期目標管理 ====== */
-function addGoal(){
-    const input=document.getElementById("goal-input");
-    const target=document.getElementById("goal-target");
-    if(!input.value||!target.value) return alert("請輸入完整目標與次數");
-    const goals=JSON.parse(localStorage.getItem("goals")||"[]");
-    goals.push({id:Date.now(),name:input.value,target:parseInt(target.value),progress:0});
-    localStorage.setItem("goals",JSON.stringify(goals));
-    input.value="";target.value="";
-    loadGoals();
-}
-function loadGoals(){
-    const goals=JSON.parse(localStorage.getItem("goals")||"[]");
-    const list=document.getElementById("goal-list");
-    list.innerHTML=goals.map(g=>`
-        <div style="margin-bottom:10px;padding:10px;border:1px solid #ccc;border-radius:8px;">
-            <strong>${g.name}</strong> (${g.progress}/${g.target})
-            <button onclick="updateGoal(${g.id})">+1</button>
-        </div>
-    `).join("");
-}
-function updateGoal(id){
-    const goals=JSON.parse(localStorage.getItem("goals")||"[]");
-    const g=goals.find(x=>x.id===id);
-    if(g){g.progress++;if(g.progress>=g.target)showNotification("🎯 完成長期目標："+g.name);}
-    localStorage.setItem("goals",JSON.stringify(goals));
-    loadGoals();
-}
-
-/* ====== 深色模式 ====== */
-function toggleDarkMode(){
-    document.body.classList.toggle("dark-mode");
-}
-</script>
-
-<style>
-/* 深色模式樣式 */
-body.dark-mode{
-    background:#121212;
-    color:#f1f1f1;
-}
-body.dark-mode .container{
-    background:#1e1e1e;
-}
-body.dark-mode .header{
-    background:linear-gradient(135deg,#444,#222);
-}
-</style>
+  <!-- 外部 JS -->
+  <script src="js/app.js"></script>
+</body>
+</html>
